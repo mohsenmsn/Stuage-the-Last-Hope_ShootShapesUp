@@ -1,0 +1,111 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ShootShapesUp
+{
+    static class PlayerStatus
+    {
+        // amount of time it takes, in seconds, for a multiplier to expire.
+        private const float multiplierExpiryTime = 0.5f;
+        private const int maxMultiplier = 25;
+
+        public static int Lives { get; private set; }
+        public static int Score { get; private set; }
+        public static int Multiplier { get; private set; }
+        public static float timer = 20;// 30        //Initialize a 10 second timer
+        //public const float TIMER = 10;
+        public static float timer2 = 30; //50
+        // public const float TIMER2 = 20;
+        public static float timer3 = 40; //70
+
+        private static float multiplierTimeLeft;    // time until the current multiplier expires
+        private static int scoreForExtraLife;       // score required to gain an extra life
+
+        private const string highScoreFilename = "highscore.txt";
+        private static int LoadHighScore()
+        {
+            // return the saved high score if possible and return 0 otherwise
+            int score;
+            return File.Exists(highScoreFilename) && int.TryParse(File.ReadAllText(highScoreFilename), out score) ? score : 0;
+        }
+        private static void SaveHighScore(int score)
+        {
+            File.WriteAllText(highScoreFilename, score.ToString());
+        }
+
+        public static bool IsGameOver { get { return Lives == 0; } }
+
+        public static int HighScore { get; private set; }
+
+        // Static constructor
+        static PlayerStatus()
+        {
+            HighScore = LoadHighScore();
+            Reset();
+        }
+
+        public static void Reset()
+        {
+            if (Score > HighScore)
+                SaveHighScore(HighScore = Score);
+
+            Score = 0;
+            Multiplier = 0;
+            Lives = 4;
+            scoreForExtraLife = 3000;
+            multiplierTimeLeft = 0;
+        }
+
+        public static void Update()
+        {
+            if (Multiplier > 0)
+            {
+                // update the multiplier timer
+                if ((multiplierTimeLeft -= (float)Game1.GameTime.ElapsedGameTime.TotalSeconds) <= 0)
+                {
+                    multiplierTimeLeft = multiplierExpiryTime;
+                    ResetMultiplier();
+                }
+            }
+        }
+
+        public static void AddPoints(int basePoints)
+        {
+            if (PlayerShip.Instance.IsDead)
+                return;
+
+            Score += basePoints * Multiplier;
+            while (Score >= scoreForExtraLife)
+            {
+                scoreForExtraLife += 3000;
+                Lives++;
+            }
+        }
+
+        public static void IncreaseMultiplier()
+        {
+            if (PlayerShip.Instance.IsDead)
+                return;
+
+            multiplierTimeLeft = multiplierExpiryTime;
+            if (Multiplier < maxMultiplier)
+                Multiplier++;
+        }
+
+        public static void ResetMultiplier()
+        {
+            Multiplier = 1;
+        }
+
+        public static void RemoveLife()
+        {
+            Lives--;
+        }
+
+
+    }
+}
