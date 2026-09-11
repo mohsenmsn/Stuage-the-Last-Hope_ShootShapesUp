@@ -1,9 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShootShapesUp
 {
@@ -15,10 +10,8 @@ namespace ShootShapesUp
             Position = position;
             Velocity = velocity;
             Orientation = Velocity.ToAngle();
-            Radius = 8;
+            Radius = GameConfig.BulletRadius;
         }
-
-        public bool IsExpired2 { get; internal set; }
 
         public override void Update()
         {
@@ -27,7 +20,6 @@ namespace ShootShapesUp
 
             Position += Velocity;
 
-            // delete bullets that go off-screen
             if (!Game1.Viewport.Bounds.Contains(Position.ToPoint()))
                 IsExpired = true;
         }

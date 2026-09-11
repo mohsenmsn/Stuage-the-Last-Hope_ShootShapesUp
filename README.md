@@ -28,13 +28,15 @@ As time progresses, the buzzards grow stronger and attack faster, but you remain
 
 ### Controls
 - **WASD** or **Arrow Keys**: Move Stuage (the sausage warrior)
-- **Mouse**: Aim and shoot at the invading buzzards
-- **P**: Pause/Resume game
-- **ESC**: Exit game or pause
-- **R**: Restart after game over or when paused
+- **Mouse**: Aim (custom cursor)
+- **Left mouse** (hold): Fire dual cannons — **Ctrl** or gamepad trigger also fire
+- **Space** or **Enter**: Confirm menus and briefings
+- **P** or **Esc**: Pause / resume during a level
+- **R**: Restart from pause, Game Over, or Victory
+- **Esc**: Exit from the main menu
 
 ### Objective
-As Stuage the Last Hope, survive each level for the specified time while defending the sausage planet from the buzzard invaders. Each level represents a different phase of the great war, with increasing difficulty and enemy aggression.
+As Stuage the Last Hope, survive each level for the specified time while defending the sausage planet from the buzzard invaders. Each level is a briefing, then a timed fight: Level 1 (20s) teaches Seek and Wanderer buzzards, Level 2 (30s) turns up the swarm, Level 3 (40s) brings elite 3-point buzzards.
 
 ### Scoring
 - **Seek Buzzards**: 2 points each (aggressive attackers)
@@ -46,37 +48,34 @@ As Stuage the Last Hope, survive each level for the specified time while defendi
 ## 🛠️ Technical Details
 
 ### Built With
-- **MonoGame Framework** 3.0
-- **.NET Framework** 4.7.2
+- **MonoGame Framework** 3.8 (WindowsDX)
+- **.NET 6** Windows
 - **C#** programming language
-- **XNA Content Pipeline**
 
 ### Project Structure
 ```
 ShootShapesUp/
-├── Game1.cs              # Main game class and state management
-├── PlayerShip.cs         # Player ship logic and controls
-├── Enemy.cs              # Enemy AI and behaviors
-├── Enemy2.cs             # Second enemy type
-├── Bullet.cs             # Primary bullet system
-├── Bullet2.cs            # Secondary bullet system
-├── EntityManager.cs      # Entity management and collision detection
-├── EntityManager2.cs     # Secondary entity management
-├── PlayerStatus.cs       # Score, lives, and game state
-├── EnemySpawner.cs       # Enemy spawning logic
-├── Input.cs              # Input handling
+├── Game1.cs              # State machine, HUD, levels
+├── PlayerShip.cs         # Movement, aim, fire, respawn
+├── Enemy.cs              # Seek / Wanderer / Elite factories
+├── Bullet.cs             # Dual-cannon shots
+├── EntityManager.cs      # Update, draw, collisions
+├── PlayerStatus.cs       # Lives, score, multiplier, timers
+├── EnemySpawner.cs       # Per-level spawn profiles
+├── Input.cs              # Keyboard, mouse, gamepad
 ├── Art.cs                # Asset loading
-├── MathUtil.cs           # Mathematical utilities
-├── Extensions.cs         # Extension methods
-└── Content/              # Game assets (textures, sounds, fonts)
+├── GameConfig.cs         # Gameplay constants
+├── MathUtil.cs           # Polar helpers
+├── Extensions.cs         # Vector / random helpers
+└── Content/              # Textures, sounds, fonts
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Visual Studio 2019 or later
-- MonoGame 3.8 or later
-- .NET Framework 4.7.2 or later
+- Windows
+- .NET 6 SDK
+- Visual Studio 2022, or the `dotnet` CLI
 
 ### Installation
 1. **Clone the repository**:
@@ -85,19 +84,15 @@ ShootShapesUp/
    cd stuage-the-last-hope
    ```
 
-2. **Open in Visual Studio**:
-   - Open `ShootShapesUp.csproj` in Visual Studio
-   - Restore NuGet packages (right-click solution → Restore NuGet Packages)
-
-3. **Build and run**:
-   - Press F5 to build and run
-   - Or use the provided scripts: `build.bat` and `run.bat`
+2. **Build and run**:
+   - Open `ShootShapesUp.csproj` and press F5, or
+   - Run `build.bat` then `run.bat` (`dotnet build -c Release`)
 
 ### Building from Source
-1. Ensure MonoGame is installed
-2. Open the solution in Visual Studio
-3. Build the project (Ctrl+Shift+B)
-4. Run the executable from the output directory
+```bash
+dotnet build ShootShapesUp.csproj -c Release
+```
+The executable is at `bin\Release\net6.0-windows\ShootShapesUp.exe`.
 
 ## 🎨 Game Levels
 
@@ -122,19 +117,15 @@ ShootShapesUp/
 ## 🔧 Development Notes
 
 ### Code Improvements Made
-- Removed commented-out code and debug statements
-- Improved code organization and readability
-- Added proper restart functionality
-- Enhanced game over screen with instructions
-- Updated to .NET Framework 4.7.2
-- Added comprehensive documentation
+- Single entity/enemy/bullet manager (no duplicated `*2` types)
+- Simulation runs once per frame and only while playing
+- Restart, pause, lives/respawn, and between-level briefings work as designed
+- Builds with MonoGame 3.8 on .NET 6 (Windows)
 
 ### Future Enhancements
 - [ ] Add particle effects for explosions
 - [ ] Implement power-ups and special weapons
 - [ ] Add more enemy types and behaviors
-- [ ] Create a proper menu system
-- [ ] Add controller support
 - [ ] Implement save/load functionality
 - [ ] Add more visual effects and animations
 

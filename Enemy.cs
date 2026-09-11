@@ -2,19 +2,19 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShootShapesUp
 {
     class Enemy : Entity
     {
-        public static Random rand = new Random();
-        private List<IEnumerator<int>> behaviours = new List<IEnumerator<int>>();
+        public static readonly Random rand = new Random();
+        private readonly List<IEnumerator<int>> behaviours = new List<IEnumerator<int>>();
         private int timeUntilStart = 60;
+        private float friction = 0.8f;
+
         public bool IsActive { get { return timeUntilStart <= 0; } }
         public int PointValue { get; private set; }
+
         public Enemy(Texture2D image, Vector2 position)
         {
             this.image = image;
@@ -24,21 +24,31 @@ namespace ShootShapesUp
             PointValue = 1;
         }
 
-        public static Enemy CreateSeek(Vector2 position)
+        public static Enemy CreateSeek(Vector2 position, float acceleration)
         {
             var enemy = new Enemy(Art.Seek, position);
-            enemy.AddBehaviour(enemy.FollowPlayer(0.7f)); // Speed multiplier
+            enemy.AddBehaviour(enemy.FollowPlayer(acceleration));
             enemy.PointValue = 2;
-
+            enemy.friction = 0.8f;
             return enemy;
         }
-      
 
         public static Enemy CreateWanderer(Vector2 position)
         {
             var enemy = new Enemy(Art.Wanderer, position);
             enemy.AddBehaviour(enemy.MoveRandomly());
             enemy.PointValue = 1;
+            enemy.friction = 0.8f;
+            return enemy;
+        }
+
+        public static Enemy CreateElite(Vector2 position)
+        {
+            var enemy = new Enemy(Art.Seekto, position);
+            enemy.AddBehaviour(enemy.FollowPlayer(0.9f));
+            enemy.PointValue = 3;
+            enemy.friction = 0.88f;
+            enemy.Radius *= 0.9f;
             return enemy;
         }
 
@@ -54,10 +64,7 @@ namespace ShootShapesUp
 
             Position += Velocity;
             Position = Vector2.Clamp(Position, Size / 2, Game1.ScreenSize - Size / 2);
-           
-            
-            Velocity *= 0.8f; // Friction/drag
-            
+            Velocity *= friction;
         }
 
         private void AddBehaviour(IEnumerable<int> behaviour)
@@ -82,39 +89,45 @@ namespace ShootShapesUp
 
         public void WasShot()
         {
+            if (IsExpired)
+                return;
+
             IsExpired = true;
             PlayerStatus.AddPoints(PointValue);
             PlayerStatus.IncreaseMultiplier();
-            Game1.Explosion.Play(0.5f, rand.NextFloat(-0.8f, 0.8f), 0);
+            Game1.PlayExplosion();
+            Game1.OnEnemyKilled();
         }
-        #region Behaviours
-        IEnumerable<int> FollowPlayer(float acceleration = 3f)
+
+        public void ExpireSilent()
+        {
+            if (IsExpired)
+                return;
+
+            IsExpired = true;
+            Game1.PlayExplosion();
+        }
+
+        IEnumerable<int> FollowPlayer(float acceleration)
         {
             while (true)
             {
                 if (!PlayerShip.Instance.IsDead)
-                    Velocity += (PlayerShip.Instance.Position - Position) * (acceleration / (PlayerShip.Instance.Position - Position).Length());
+                {
+                    Vector2 offset = PlayerShip.Instance.Position - Position;
+                    float length = offset.Length();
+                    if (length > 0.001f)
+                        Velocity += offset * (acceleration / length);
+                }
 
-                if (Velocity != Vector2.Zero)
+                if (Velocity.LengthSquared() > 0)
                     Orientation = Velocity.ToAngle();
 
                 yield return 0;
             }
         }
-       IEnumerable<int> FollowPlayer2(float acceleration = 1f)
-        {
-            while (true)
-            {
-                if (!PlayerShip.Instance.IsDead)
-                    Velocity += (PlayerShip.Instance.Position - Position) * (acceleration / (PlayerShip.Instance.Position - Position).Length());
 
-                if (Velocity != Vector2.Zero)
-                    Orientation = Velocity.ToAngle();
-
-                yield return 0;
-            }
-        } 
-            IEnumerable<int> MoveRandomly()
+        IEnumerable<int> MoveRandomly()
         {
             float direction = rand.NextFloat(0, MathHelper.TwoPi);
 
@@ -131,7 +144,6 @@ namespace ShootShapesUp
                     var bounds = Game1.Viewport.Bounds;
                     bounds.Inflate(-image.Width, -image.Height);
 
-                    // if the enemy is outside the bounds, make it move away from the edge
                     if (!bounds.Contains(Position.ToPoint()))
                         direction = (Game1.ScreenSize / 2 - Position).ToAngle() + rand.NextFloat(-MathHelper.PiOver2, MathHelper.PiOver2);
 
@@ -139,6 +151,5 @@ namespace ShootShapesUp
                 }
             }
         }
-        #endregion
     }
 }

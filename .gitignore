@@ -12,7 +12,6 @@ obj/
 # MonoGame
 Content/bin/
 Content/obj/
-*.mgcb
 *.mgcontent
 
 # Build results

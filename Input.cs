@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShootShapesUp
 {
@@ -27,31 +22,58 @@ namespace ShootShapesUp
             gamepadState = GamePad.GetState(PlayerIndex.One);
         }
 
-        // Checks if a key was just pressed down
         public static bool WasKeyPressed(Keys key)
         {
             return lastKeyboardState.IsKeyUp(key) && keyboardState.IsKeyDown(key);
         }
+
         public static bool WasButtonPressed(Buttons button)
         {
             return lastGamepadState.IsButtonUp(button) && gamepadState.IsButtonDown(button);
         }
+
+        public static bool IsFiring()
+        {
+            return mouseState.LeftButton == ButtonState.Pressed
+                || keyboardState.IsKeyDown(Keys.LeftControl)
+                || keyboardState.IsKeyDown(Keys.RightControl)
+                || gamepadState.Triggers.Right > 0.3f
+                || gamepadState.IsButtonDown(Buttons.A)
+                || gamepadState.IsButtonDown(Buttons.RightShoulder);
+        }
+
+        public static bool WasConfirmPressed()
+        {
+            return WasKeyPressed(Keys.Space)
+                || WasKeyPressed(Keys.Enter)
+                || WasButtonPressed(Buttons.A)
+                || WasButtonPressed(Buttons.Start);
+        }
+
+        public static bool WasMenuUpPressed()
+        {
+            return WasKeyPressed(Keys.Up) || WasKeyPressed(Keys.W) || WasButtonPressed(Buttons.DPadUp);
+        }
+
+        public static bool WasMenuDownPressed()
+        {
+            return WasKeyPressed(Keys.Down) || WasKeyPressed(Keys.S) || WasButtonPressed(Buttons.DPadDown);
+        }
+
         public static Vector2 GetMovementDirection()
         {
-
             Vector2 direction = gamepadState.ThumbSticks.Left;
-            direction.Y *= -1;  // invert the y-axis
+            direction.Y *= -1;
 
-            if (keyboardState.IsKeyDown(Keys.A))
+            if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.Left))
                 direction.X -= 1;
-            if (keyboardState.IsKeyDown(Keys.D))
+            if (keyboardState.IsKeyDown(Keys.D) || keyboardState.IsKeyDown(Keys.Right))
                 direction.X += 1;
-            if (keyboardState.IsKeyDown(Keys.W))
+            if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.Up))
                 direction.Y -= 1;
-            if (keyboardState.IsKeyDown(Keys.S))
+            if (keyboardState.IsKeyDown(Keys.S) || keyboardState.IsKeyDown(Keys.Down))
                 direction.Y += 1;
 
-            // Clamp the length of the vector to a maximum of 1.
             if (direction.LengthSquared() > 1)
                 direction.Normalize();
 
@@ -60,17 +82,16 @@ namespace ShootShapesUp
 
         public static Vector2 GetAimDirection()
         {
+            Vector2 stick = gamepadState.ThumbSticks.Right;
+            stick.Y *= -1;
+            if (stick.LengthSquared() > 0.09f)
+                return Vector2.Normalize(stick);
+
             Vector2 direction = MousePosition - PlayerShip.Instance.Position;
-
-            if (direction == Vector2.Zero)
+            if (direction.LengthSquared() < 1f)
                 return Vector2.Zero;
-            else
-                return Vector2.Normalize(direction);
-        }
 
-        public static bool WasBombButtonPressed()
-        {
-            return WasButtonPressed(Buttons.LeftTrigger) || WasButtonPressed(Buttons.RightTrigger) || WasKeyPressed(Keys.Space);
+            return Vector2.Normalize(direction);
         }
     }
 }

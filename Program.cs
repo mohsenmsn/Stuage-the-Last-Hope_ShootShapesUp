@@ -2,7 +2,6 @@
 
 namespace ShootShapesUp
 {
-#if WINDOWS || LINUX
     public static class Program
     {
         [STAThread]
@@ -12,5 +11,4 @@ namespace ShootShapesUp
                 game.Run();
         }
     }
-#endif
 }

@@ -5,15 +5,12 @@
 Before running ShootShapesUp, ensure you have the following installed:
 
 ### Required Software
-- **Visual Studio 2019 or later** (Community edition is fine)
-- **.NET Framework 4.7.2 or later**
-- **MonoGame 3.8 or later**
+- **.NET 6 SDK**
+- **Visual Studio 2022** (or `dotnet build` from the command line)
+- Windows desktop (DirectX)
 
 ### Installing MonoGame
-
-1. Download MonoGame from [monogame.net](https://www.monogame.net/downloads/)
-2. Run the installer and follow the setup wizard
-3. Make sure to install the Visual Studio templates
+MonoGame is restored from NuGet when you build (`MonoGame.Framework.WindowsDX`). You do not need a separate MonoGame installer.
 
 ## Building the Project
 
@@ -25,13 +22,8 @@ Before running ShootShapesUp, ensure you have the following installed:
 
 ### Method 2: Using Command Line
 1. Open Command Prompt in the project directory
-2. Run `build.bat` to build the project
+2. Run `build.bat` (or `dotnet build ShootShapesUp.csproj -c Release`)
 3. Run `run.bat` to start the game
-
-### Method 3: Using MSBuild
-```bash
-msbuild ShootShapesUp.csproj /p:Configuration=Release /p:Platform=x86
-```
 
 ## Troubleshooting
 
@@ -46,7 +38,7 @@ msbuild ShootShapesUp.csproj /p:Configuration=Release /p:Platform=x86
 - Rebuild the content pipeline in Visual Studio
 
 **Build errors:**
-- Ensure you have .NET Framework 4.7.2 or later installed
+- Ensure you have the .NET 6 SDK installed (`dotnet --list-sdks`)
 - Try cleaning and rebuilding the solution
 
 ### System Requirements

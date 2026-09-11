@@ -1,47 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace ShootShapesUp
 {
     static class PlayerStatus
     {
-        // amount of time it takes, in seconds, for a multiplier to expire.
-        private const float multiplierExpiryTime = 0.5f;
-        private const int maxMultiplier = 25;
+        private const string highScoreFilename = "highscore.txt";
 
         public static int Lives { get; private set; }
         public static int Score { get; private set; }
         public static int Multiplier { get; private set; }
-        public static float timer = 20;// 30        //Initialize a 10 second timer
-        //public const float TIMER = 10;
-        public static float timer2 = 30; //50
-        // public const float TIMER2 = 20;
-        public static float timer3 = 40; //70
+        public static float RemainingTime { get; private set; }
+        public static float ExtraLifePulse { get; private set; }
+        public static int HighScore { get; private set; }
+        public static bool IsGameOver { get { return Lives <= 0; } }
 
-        private static float multiplierTimeLeft;    // time until the current multiplier expires
-        private static int scoreForExtraLife;       // score required to gain an extra life
+        private static float multiplierTimeLeft;
+        private static int scoreForExtraLife;
 
-        private const string highScoreFilename = "highscore.txt";
         private static int LoadHighScore()
         {
-            // return the saved high score if possible and return 0 otherwise
             int score;
             return File.Exists(highScoreFilename) && int.TryParse(File.ReadAllText(highScoreFilename), out score) ? score : 0;
         }
+
         private static void SaveHighScore(int score)
         {
             File.WriteAllText(highScoreFilename, score.ToString());
         }
 
-        public static bool IsGameOver { get { return Lives == 0; } }
-
-        public static int HighScore { get; private set; }
-
-        // Static constructor
         static PlayerStatus()
         {
             HighScore = LoadHighScore();
@@ -50,26 +36,48 @@ namespace ShootShapesUp
 
         public static void Reset()
         {
+            CommitHighScore();
+            Score = 0;
+            Multiplier = 1;
+            Lives = GameConfig.StartingLives;
+            scoreForExtraLife = GameConfig.ExtraLifeInterval;
+            multiplierTimeLeft = GameConfig.MultiplierExpiry;
+            RemainingTime = GameConfig.Level1Duration;
+            ExtraLifePulse = 0;
+        }
+
+        public static void BeginLevel(float duration)
+        {
+            RemainingTime = duration;
+        }
+
+        public static void TickTime(float elapsedSeconds)
+        {
+            RemainingTime -= elapsedSeconds;
+            if (RemainingTime < 0)
+                RemainingTime = 0;
+        }
+
+        public static void CommitHighScore()
+        {
             if (Score > HighScore)
                 SaveHighScore(HighScore = Score);
-
-            Score = 0;
-            Multiplier = 0;
-            Lives = 4;
-            scoreForExtraLife = 3000;
-            multiplierTimeLeft = 0;
         }
 
         public static void Update()
         {
-            if (Multiplier > 0)
+            if (ExtraLifePulse > 0)
             {
-                // update the multiplier timer
-                if ((multiplierTimeLeft -= (float)Game1.GameTime.ElapsedGameTime.TotalSeconds) <= 0)
-                {
-                    multiplierTimeLeft = multiplierExpiryTime;
+                ExtraLifePulse -= (float)Game1.GameTime.ElapsedGameTime.TotalSeconds * 2f;
+                if (ExtraLifePulse < 0)
+                    ExtraLifePulse = 0;
+            }
+
+            if (Multiplier > 1)
+            {
+                multiplierTimeLeft -= (float)Game1.GameTime.ElapsedGameTime.TotalSeconds;
+                if (multiplierTimeLeft <= 0)
                     ResetMultiplier();
-                }
             }
         }
 
@@ -81,8 +89,9 @@ namespace ShootShapesUp
             Score += basePoints * Multiplier;
             while (Score >= scoreForExtraLife)
             {
-                scoreForExtraLife += 3000;
+                scoreForExtraLife += GameConfig.ExtraLifeInterval;
                 Lives++;
+                ExtraLifePulse = 1f;
             }
         }
 
@@ -91,21 +100,22 @@ namespace ShootShapesUp
             if (PlayerShip.Instance.IsDead)
                 return;
 
-            multiplierTimeLeft = multiplierExpiryTime;
-            if (Multiplier < maxMultiplier)
+            multiplierTimeLeft = GameConfig.MultiplierExpiry;
+            if (Multiplier < GameConfig.MaxMultiplier)
                 Multiplier++;
         }
 
         public static void ResetMultiplier()
         {
             Multiplier = 1;
+            multiplierTimeLeft = GameConfig.MultiplierExpiry;
         }
 
         public static void RemoveLife()
         {
-            Lives--;
+            if (Lives > 0)
+                Lives--;
+            ResetMultiplier();
         }
-
-
     }
 }

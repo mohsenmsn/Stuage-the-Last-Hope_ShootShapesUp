@@ -1,11 +1,11 @@
 @echo off
 echo Starting ShootShapesUp...
 
-if exist "bin\Windows\x86\Release\ShootShapesUp.exe" (
-    cd bin\Windows\x86\Release
+if exist "bin\Release\net6.0-windows\ShootShapesUp.exe" (
+    cd bin\Release\net6.0-windows
     ShootShapesUp.exe
-) else if exist "bin\Windows\x86\Debug\ShootShapesUp.exe" (
-    cd bin\Windows\x86\Debug
+) else if exist "bin\Debug\net6.0-windows\ShootShapesUp.exe" (
+    cd bin\Debug\net6.0-windows
     ShootShapesUp.exe
 ) else (
     echo Executable not found! Please build the project first.

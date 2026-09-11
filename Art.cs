@@ -1,17 +1,11 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShootShapesUp
 {
-   static  class Art
+    static class Art
     {
         public static Texture2D MainMenu { get; private set; }
-
         public static Texture2D SPlayer { get; private set; }
         public static Texture2D Seek { get; private set; }
         public static Texture2D Seekto { get; private set; }
@@ -27,6 +21,7 @@ namespace ShootShapesUp
         public static SpriteFont Font21 { get; private set; }
         public static Texture2D BGalaxy2 { get; private set; }
         public static Texture2D EndGame12 { get; private set; }
+
         public static void Load(ContentManager Content)
         {
             MainMenu = Content.Load<Texture2D>("Art/MainMenu");
@@ -46,7 +41,5 @@ namespace ShootShapesUp
             Font21 = Content.Load<SpriteFont>("Fonts/Font21");
             EndGame12 = Content.Load<Texture2D>("Art/EndGame12");
         }
-
-
     }
 }
